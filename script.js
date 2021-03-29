@@ -38,43 +38,64 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
       const nodes = partitioned.descendants();
 
       const rootNode = nodes[0];
+      let focus = rootNode;
 
       // compute whole width and height for all nodes, so we can set proper scale acoording to viewport.
-      const nodesWidth = rootNode.x1 - rootNode.x0;
-      const nodesHeight = (rootNode.y1 - rootNode.y0) * (rootNode.height + 1);
-
-      //const xScale = d3.scaleLinear().domain([0, nodesWidth]).range([0, width]);
-      //const yScale = d3.scaleLinear().domain([0, nodesHeight]).range([0, height]);
+      let nodesWidth = rootNode.x1 - rootNode.x0;
+      let nodesHeight = (rootNode.y1 - rootNode.y0) * (rootNode.height + 1);
 
       const cells = svg
-        .selectAll("g")
-        .data(nodes)
-        .join("g")
-          .attr("transform", d => `translate(${getXScale(nodesWidth)(d.x0)},${getYScale(nodesHeight)(d.y0)})`);
+      .selectAll("g")
+      .data(nodes)
+      .join("g")
+        .attr("transform", d => `translate(${getXScale(nodesWidth)(d.x0)},${getYScale(nodesHeight)(d.y0)})`);
 
-      //svg.selectAll('rect').data(nodes)
-        //.enter().append('rect')
-      cells.append('rect')
-        //.attr("x", d => getXScale(nodesWidth)(d.x0))
-        //.attr("y", d => getYScale(nodesHeight)(d.y0))
-        .attr("width", d => getXScale(nodesWidth)(d.x1 - d.x0))
-        .attr("height", d => getYScale(nodesHeight)(d.y1 - d.y0))
-        .attr("fill-opacity", 0.6)
-        //.attr('fill', 'red');
-        .attr("fill", d => {
-          return colorScale((d.children ? d : d.parent).data.name);
-          //return "red";
-        });
+        const clicked = (event, p) => {
+          // p became the new root.
+          focus = focus === p ? p = p.parent : p;
 
-      //svg.selectAll('text').data(nodes)
-        //.enter().append('text')
-      cells.append('text')
-          .attr('x', d => getXScale(nodesWidth)(d.x1 - d.x0) / 2)
-          .attr('y', d => getYScale(nodesHeight)(d.y1 - d.y0) / 2)
-          .attr('dy', '0.32em')
-          .attr('text-anchor', d => 'middle')
-          .attr('font-size', d => 3 - d.depth + 'em')
-          .text(d => d.data.name);
+          if(!p) {
+            return;
+          }
+  
+          nodesWidth = p.x1 - p.x0;
+          nodesHeight = (p.y1 - p.y0) * (p.height + 1);
+    
+          rootNode.each(d => {
+            d.target = {
+              x0: getXScale(nodesWidth)(d.x0 - p.x0),
+              x1: getXScale(nodesWidth)(d.x1 - p.x0),
+              y0: getYScale(nodesHeight)(d.y0 - p.y0),
+              y1: getYScale(nodesHeight)(d.y1 - p.y0)
+            }
+          });
+  
+          const t = cells.transition().duration(750)
+          .attr("transform", d => `translate(${d.target.x0},${d.target.y0})`);
+  
+          rects.transition(t).attr("height", d => d.target.y1 - d.target.y0).attr("width", d => d.target.x1 - d.target.x0);
+      
+        }
+
+
+     const rects = cells.append('rect')
+      .attr("width", d => getXScale(nodesWidth)(d.x1 - d.x0))
+      .attr("height", d => getYScale(nodesHeight)(d.y1 - d.y0))
+      .attr("fill-opacity", 0.6)
+      .attr("fill", d => {
+        return colorScale((d.children ? d : d.parent).data.name);
+      })
+      .style("cursor", "pointer")
+      .on("click", clicked);
+
+
+      const texts = cells.append('text')
+        .attr('x', d => getXScale(nodesWidth)(d.x1 - d.x0) / 2)
+        .attr('y', d => getYScale(nodesHeight)(d.y1 - d.y0) / 2)
+        .attr('dy', '0.32em')
+        .attr('text-anchor', d => 'middle')
+        .attr('font-size', d => 3 - d.depth + 'em')
+        .text(d => d.data.name);
     });
 
     
@@ -85,5 +106,5 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
     scale
     put rect and text in a group so they move together when zooming
     zoom
-
+    children doesn't have to have length of parent.
     */
