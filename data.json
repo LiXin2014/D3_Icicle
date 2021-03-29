@@ -1,0 +1,32 @@
+{
+  "name": "PrimeVisualizer.App.Main",
+  "children": [
+    {
+      "name": "System.Windows.Application.Run",
+      "children": [
+        {
+          "name": "InitializeComponent",
+          "value": 78
+        },
+        {
+          "name": "GeneratePrimes",
+          "value": 18
+        }
+      ]
+    },
+    {
+      "name": "PrimeVisualizer.App.ctor",
+      "children": [
+        {
+          "name": "System.Windows.Application.ctor",
+          "value": 16
+        },
+        {
+          "name": "Fake",
+          "value": 160
+        }
+      ]
+    }
+  ]
+}
+
