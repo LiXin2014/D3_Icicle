@@ -1,8 +1,10 @@
 {
   "name": "PrimeVisualizer.App.Main",
+  "value": 400,
   "children": [
     {
       "name": "System.Windows.Application.Run",
+      "value": 150,
       "children": [
         {
           "name": "InitializeComponent",
@@ -16,6 +18,7 @@
     },
     {
       "name": "PrimeVisualizer.App.ctor",
+      "value": 190,
       "children": [
         {
           "name": "System.Windows.Application.ctor",

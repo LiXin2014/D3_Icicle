@@ -18,7 +18,6 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
 
   const width = document.body.clientWidth;
   const height = document.body.clientHeight / 2;
-  
 
   const svg = d3.select('svg').attr('width', width).attr('height',height);
   
@@ -27,6 +26,8 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
   const getXScale = nodesWidth => d3.scaleLinear().domain([0, nodesWidth]).range([0, width]);
   const getYScale = nodesHeight => d3.scaleLinear().domain([0, nodesHeight]).range([0, height]);
+
+  
   
   d3.json('data.json')
     .then(data => {
@@ -43,6 +44,11 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
       // compute whole width and height for all nodes, so we can set proper scale acoording to viewport.
       let nodesWidth = rootNode.x1 - rootNode.x0;
       let nodesHeight = (rootNode.y1 - rootNode.y0) * (rootNode.height + 1);
+
+      // Define the div for the tooltip
+      var div = d3.select("body").append("div")	
+      .attr("class", "tooltip")				
+      .style("opacity", 0);
 
       const cells = svg
       .selectAll("g")
@@ -77,7 +83,7 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
       
         }
 
-
+    
      const rects = cells.append('rect')
       .attr("width", d => getXScale(nodesWidth)(d.x1 - d.x0))
       .attr("height", d => getYScale(nodesHeight)(d.y1 - d.y0))
@@ -86,8 +92,20 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
         return colorScale((d.children ? d : d.parent).data.name);
       })
       .style("cursor", "pointer")
-      .on("click", clicked);
-
+      .on("click", clicked)
+      .on('mouseover', function(event, d) {		
+        div.transition()		
+            .duration(200)		
+            .style("opacity", .9);		
+        div.html(d.data.name)	
+            .style("left", (event.clientX) + "px")		
+            .style("top", (event.clientY - 28) + "px");	
+        })					
+        .on("mouseout", function(d) {		
+        div.transition()		
+            .duration(500)		
+            .style("opacity", 0.9);	
+      });
 
       const texts = cells.append('text')
         .attr('x', d => getXScale(nodesWidth)(d.x1 - d.x0) / 2)
@@ -96,6 +114,26 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
         .attr('text-anchor', d => 'middle')
         .attr('font-size', d => 3 - d.depth + 'em')
         .text(d => d.data.name);
+
+
+      const onSearch = () => {
+        let term = document.getElementById("term").value;
+        rects.each(rect => {
+          let index = rect.data.name.toLocaleLowerCase().indexOf(term.toLocaleLowerCase());
+          if(index !== -1){
+            rect.highlighted = true;
+          } else {
+            rect.highlighted = false;
+          }
+        });
+        // color on highlited
+        rects.transition().duration(750).attr("fill", d => {
+          return d.highlighted ? "red" : colorScale((d.children ? d : d.parent).data.name);
+        });
+      };
+
+      const searchButton = document.querySelector("#searchButton");
+      searchButton.addEventListener('click', onSearch);
     });
 
     
