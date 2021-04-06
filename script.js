@@ -88,6 +88,8 @@ https://bl.ocks.org/tophtucker/a35c0f4f32400755a6a9b976be834ab3
       .attr("width", d => getXScale(nodesWidth)(d.x1 - d.x0))
       .attr("height", d => getYScale(nodesHeight)(d.y1 - d.y0))
       .attr("fill-opacity", 0.6)
+      .attr("tabindex", 0)
+      .attr("aria-label", d => d.data.name)
       .attr("fill", d => {
         return colorScale((d.children ? d : d.parent).data.name);
       })
